@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EPS Growth Consensus</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #222;
+      --border: #2e2e2e;
+      --border2: #3a3a3a;
+      --text: #e8e8e8;
+      --muted: #888;
+      --hint: #555;
+      --green: #22c98a;
+      --red: #e05252;
+      --accent: #3b7ef8;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      width: 100%;
+      max-width: 720px;
+      padding: 2.5rem 1.5rem 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 2rem;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 720px;
+      padding: 0 1.5rem 4rem;
+      flex: 1;
+    }
+
+    /* API key section */
+    .api-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .api-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .api-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .api-label .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--hint);
+    }
+
+    .api-label .dot.active {
+      background: var(--green);
+    }
+
+    .api-toggle {
+      font-size: 12px;
+      color: var(--hint);
+      cursor: pointer;
+    }
+
+    .api-body {
+      margin-top: 1rem;
+    }
+
+    .api-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .api-row input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 0 12px;
+      height: 38px;
+      font-size: 13px;
+      font-family: monospace;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .api-row input:focus { border-color: var(--accent); }
+
+    .btn-save {
+      height: 38px;
+      padding: 0 16px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+
+    .btn-save:hover { opacity: 0.85; }
+
+    .api-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--hint);
+      line-height: 1.6;
+    }
+
+    .api-hint a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Search */
+    .search-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+
+    .search-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .search-row input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 0 16px;
+      height: 46px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-row input:focus { border-color: var(--accent); }
+    .search-row input::placeholder { text-transform: none; letter-spacing: 0; font-weight: 400; font-size: 14px; color: var(--hint); }
+
+    .btn-search {
+      height: 46px;
+      padding: 0 22px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover { opacity: 0.88; }
+    .btn-search:active { transform: scale(0.97); }
+    .btn-search:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border: 1px solid var(--border2);
+      border-radius: 99px;
+      cursor: pointer;
+      color: var(--muted);
+      background: transparent;
+      transition: all 0.12s;
+      letter-spacing: 0.03em;
+    }
+
+    .chip:hover {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--border2);
+    }
+
+    /* Status */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .status-dot.pulse {
+      animation: pulse 1.1s infinite;
+      background: var(--accent);
+    }
+
+    .status-dot.err { background: var(--red); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    /* Results */
+    .result-ticker {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .result-company {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .metric {
+      background: var(--surface2);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .metric-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--hint);
+      margin-bottom: 6px;
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      line-height: 1;
+    }
+
+    .metric-value.pos { color: var(--green); }
+    .metric-value.neg { color: var(--red); }
+
+    .metric-sub {
+      font-size: 11px;
+      color: var(--hint);
+      margin-top: 5px;
+    }
+
+    .summary-box {
+      background: var(--surface2);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .sources-label {
+      font-size: 12px;
+      color: var(--hint);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .source-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .source-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .source-meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .bar-track {
+      height: 3px;
+      background: var(--border2);
+      border-radius: 2px;
+      margin-top: 8px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--green);
+      transition: width 0.7s ease;
+    }
+
+    .bar-fill.neg { background: var(--red); }
+
+    .source-val {
+      font-size: 18px;
+      font-weight: 700;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      white-space: nowrap;
+    }
+
+    .source-val.pos { color: var(--green); }
+    .source-val.neg { color: var(--red); }
+
+    .disclaimer {
+      margin-top: 1.5rem;
+      font-size: 11px;
+      color: var(--hint);
+      line-height: 1.7;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    footer {
+      width: 100%;
+      max-width: 720px;
+      padding: 0 1.5rem 2rem;
+      font-size: 11px;
+      color: var(--hint);
+      text-align: center;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+
+    @media (max-width: 500px) {
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">E</div>
+    <div>
+      <div class="logo-text">EPS Consensus</div>
+      <div class="logo-sub">5-year analyst growth aggregator</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- API Key -->
+  <div class="api-section">
+    <div class="api-section-header" onclick="toggleApiSection()">
+      <span class="api-label">
+        <span class="dot" id="apiDot"></span>
+        <span id="apiLabelText">Anthropic API key — not set</span>
+      </span>
+      <span class="api-toggle" id="apiToggleBtn">Set up ▾</span>
+    </div>
+    <div class="api-body" id="apiBody" style="display:none">
+      <div class="api-row">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+        <button class="btn-save" onclick="saveKey()">Save</button>
+      </div>
+      <p class="api-hint">
+        Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.
+        New accounts receive $5 in free credits — enough for ~300 searches.
+        Your key is stored only in your browser (localStorage) and never sent anywhere except directly to Anthropic's API.
+      </p>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-card">
+    <div class="search-title">EPS growth consensus</div>
+    <p class="search-sub">Enter a stock ticker to search analyst EPS growth forecasts across multiple sources and compute an average.</p>
+    <div class="search-row">
+      <input type="text" id="tickerInput" placeholder="e.g. NVDA, AAPL, MSFT" maxlength="10" />
+      <button class="btn-search" id="searchBtn" onclick="runSearch()">Search →</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <!-- Output -->
+  <div id="output"></div>
+
+</main>
+
+<footer>
+  Built with the <a href="https://docs.anthropic.com" target="_blank">Anthropic API</a> + web search.
+  Data sourced from public analyst consensus estimates. Not investment advice.
+</footer>
+
+<script>
+  const TICKERS = ['NVDA','AAPL','MSFT','GOOGL','META','AMZN','V','MA','LLY','COST','MCO','NFLX'];
+  const chipsEl = document.getElementById('chips');
+  TICKERS.forEach(t => {
+    const c = document.createElement('button');
+    c.className = 'chip';
+    c.textContent = t;
+    c.onclick = () => { document.getElementById('tickerInput').value = t; runSearch(); };
+    chipsEl.appendChild(c);
+  });
+
+  const tickerInput = document.getElementById('tickerInput');
+  tickerInput.addEventListener('keydown', e => { if (e.key === 'Enter') runSearch(); });
+  tickerInput.addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
+
+  // API key management
+  let apiKey = localStorage.getItem('eps_api_key') || '';
+  updateApiStatus();
+
+  function updateApiStatus() {
+    const dot = document.getElementById('apiDot');
+    const label = document.getElementById('apiLabelText');
+    if (apiKey) {
+      dot.classList.add('active');
+      label.textContent = 'API key set ✓';
+      document.getElementById('apiToggleBtn').textContent = 'Change ▾';
+    } else {
+      dot.classList.remove('active');
+      label.textContent = 'Anthropic API key — not set';
+      document.getElementById('apiToggleBtn').textContent = 'Set up ▾';
+    }
+    if (apiKey) {
+      document.getElementById('apiKeyInput').value = apiKey;
+    }
+  }
+
+  function toggleApiSection() {
+    const body = document.getElementById('apiBody');
+    const btn = document.getElementById('apiToggleBtn');
+    const open = body.style.display === 'none';
+    body.style.display = open ? 'block' : 'none';
+    btn.textContent = open ? (apiKey ? 'Close ▴' : 'Close ▴') : (apiKey ? 'Change ▾' : 'Set up ▾');
+  }
+
+  function saveKey() {
+    const val = document.getElementById('apiKeyInput').value.trim();
+    if (!val.startsWith('sk-ant-')) {
+      alert('That doesn\'t look like a valid Anthropic key (should start with sk-ant-)');
+      return;
+    }
+    apiKey = val;
+    localStorage.setItem('eps_api_key', apiKey);
+    document.getElementById('apiBody').style.display = 'none';
+    updateApiStatus();
+  }
+
+  function setStatus(msg, mode) {
+    const dotClass = mode === 'loading' ? 'pulse' : mode === 'error' ? 'err' : '';
+    document.getElementById('output').innerHTML =
+      `<div class="status"><span class="status-dot ${dotClass}"></span><span>${msg}</span></div>`;
+  }
+
+  function cc(v) { return v >= 0 ? 'pos' : 'neg'; }
+  function fmt(v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+
+  async function runSearch() {
+    const ticker = tickerInput.value.trim().toUpperCase();
+    if (!ticker) return;
+
+    if (!apiKey) {
+      document.getElementById('apiBody').style.display = 'block';
+      document.getElementById('apiKeyInput').focus();
+      setStatus('Please set your Anthropic API key first.', 'error');
+      return;
+    }
+
+    document.getElementById('searchBtn').disabled = true;
+    setStatus(`Searching EPS growth forecasts for <strong>${ticker}</strong>…`, 'loading');
+
+    const prompt = `You are a financial research assistant. Search the web for EPS (earnings per share) growth expectations for the next 5 years for the stock ticker: ${ticker}.
+
+Search for analyst consensus estimates published in the last 6 months from sources like stockanalysis.com, finviz.com, macrotrends.net, simplywall.st, MarketBeat, TipRanks, Zacks, Yahoo Finance, Seeking Alpha, wisesheets.io, GuruFocus, and financial news articles.
+
+For each source with a concrete 5-year EPS growth estimate (annual average %), extract:
+1. Source name
+2. EPS growth estimate as % per year (5yr CAGR or long-term EPS growth rate)
+3. Brief note on what it covers
+4. Approximate date
+
+Try to find at least 3-5 distinct sources. If a source gives a range, use the midpoint.
+
+Return ONLY valid JSON (no markdown, no backticks, no explanation):
+{"ticker":"${ticker}","companyName":"Full company name","sources":[{"source":"Name","estimate":12.5,"note":"5yr EPS CAGR","date":"Apr 2025"}],"summary":"One sentence on analyst sentiment"}
+
+If no data found: {"ticker":"${ticker}","error":"No reliable EPS growth data found for this ticker."}`;
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!resp.ok) {
+        const errJson = await resp.json().catch(() => ({}));
+        const msg = errJson?.error?.message || `HTTP ${resp.status}`;
+        throw new Error(msg);
+      }
+
+      const data = await resp.json();
+
+      let jsonText = '';
+      for (const block of (data.content || [])) {
+        if (block.type === 'text') jsonText += block.text;
+      }
+
+      jsonText = jsonText.replace(/```json|```/g, '').trim();
+      const s = jsonText.indexOf('{'), e = jsonText.lastIndexOf('}');
+      if (s === -1 || e === -1) throw new Error('No JSON in response. Try again.');
+      const result = JSON.parse(jsonText.slice(s, e + 1));
+
+      if (result.error) {
+        setStatus(result.error, 'error');
+        document.getElementById('searchBtn').disabled = false;
+        return;
+      }
+
+      const sources = (result.sources || []).filter(s => typeof s.estimate === 'number' && !isNaN(s.estimate));
+      if (!sources.length) {
+        setStatus(`No estimates found for ${ticker}. Try a major listed stock.`, 'error');
+        document.getElementById('searchBtn').disabled = false;
+        return;
+      }
+
+      const vals = sources.map(s => s.estimate);
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const min = Math.min(...vals);
+      const max = Math.max(...vals);
+      const absMax = Math.max(...vals.map(Math.abs), 1);
+
+      const cards = sources.map(s => {
+        const pct = (Math.abs(s.estimate) / absMax * 100).toFixed(1);
+        return `<div class="source-card">
+          <div>
+            <div class="source-name">${s.source}</div>
+            <div class="source-meta">${s.note || '5-yr EPS growth'} · ${s.date || 'Recent'}</div>
+            <div class="bar-track"><div class="bar-fill${s.estimate < 0 ? ' neg' : ''}" style="width:${pct}%"></div></div>
+          </div>
+          <div class="source-val ${cc(s.estimate)}">${fmt(s.estimate)}</div>
+        </div>`;
+      }).join('');
+
+      document.getElementById('output').innerHTML = `
+        <div class="result-ticker">${result.ticker}</div>
+        <div class="result-company">${result.companyName || result.ticker}</div>
+        <div class="metrics-grid">
+          <div class="metric">
+            <div class="metric-label">Consensus avg</div>
+            <div class="metric-value ${cc(avg)}">${fmt(avg)}</div>
+            <div class="metric-sub">per year · 5yr</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Low estimate</div>
+            <div class="metric-value ${cc(min)}">${fmt(min)}</div>
+            <div class="metric-sub">most conservative</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">High estimate</div>
+            <div class="metric-value ${cc(max)}">${fmt(max)}</div>
+            <div class="metric-sub">most optimistic</div>
+          </div>
+        </div>
+        ${result.summary ? `<div class="summary-box">${result.summary}</div>` : ''}
+        <div class="sources-label">${sources.length} source${sources.length > 1 ? 's' : ''} found</div>
+        ${cards}
+        <div class="disclaimer">
+          Data is sourced from publicly available analyst consensus estimates via live web search.
+          Figures represent expected annual EPS growth rates for the next ~5 years.
+          Long-range forecasts carry significant uncertainty. This tool is for research purposes only and does not constitute investment advice.
+        </div>`;
+
+    } catch (err) {
+      const msg = err.message.includes('401') || err.message.includes('authentication')
+        ? 'Invalid API key. Please check and update it above.'
+        : err.message.includes('insufficient') ? 'API credits exhausted. Top up at console.anthropic.com.'
+        : `Error: ${err.message}`;
+      setStatus(msg, 'error');
+    }
+
+    document.getElementById('searchBtn').disabled = false;
+  }
+</script>
+</body>
+</html>
