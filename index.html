@@ -595,8 +595,38 @@ Return ONLY valid JSON (no markdown, no backticks, no explanation):
 
 If no data found: {"ticker":"${ticker}","error":"No reliable EPS growth data found for this ticker."}`;
 
+    // Fetch with automatic retry on rate limit (429)
+    async function fetchWithRetry(url, options, retries = 3) {
+      for (let attempt = 0; attempt < retries; attempt++) {
+        const resp = await fetch(url, options);
+        if (resp.status === 429) {
+          if (attempt < retries - 1) {
+            const wait = (attempt + 1) * 15000;
+            setStatus(`Rate limit hit — retrying in ${wait/1000}s… (attempt ${attempt+1}/${retries})`, 'loading');
+            await new Promise(r => setTimeout(r, wait));
+            continue;
+          }
+        }
+        return resp;
+      }
+    }
+
+    // Robust JSON extractor — finds outermost {...} even with surrounding text
+    function extractJSON(text) {
+      text = text.replace(/```json|```/g, '').trim();
+      let depth = 0, start = -1;
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === '{') { if (depth === 0) start = i; depth++; }
+        else if (text[i] === '}') {
+          depth--;
+          if (depth === 0 && start !== -1) return text.slice(start, i + 1);
+        }
+      }
+      return null;
+    }
+
     try {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      const resp = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -606,7 +636,7 @@ If no data found: {"ticker":"${ticker}","error":"No reliable EPS growth data fou
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
+          max_tokens: 2000,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           messages: [{ role: 'user', content: prompt }]
         })
@@ -620,15 +650,14 @@ If no data found: {"ticker":"${ticker}","error":"No reliable EPS growth data fou
 
       const data = await resp.json();
 
-      let jsonText = '';
+      let rawText = '';
       for (const block of (data.content || [])) {
-        if (block.type === 'text') jsonText += block.text;
+        if (block.type === 'text') rawText += block.text;
       }
 
-      jsonText = jsonText.replace(/```json|```/g, '').trim();
-      const s = jsonText.indexOf('{'), e = jsonText.lastIndexOf('}');
-      if (s === -1 || e === -1) throw new Error('No JSON in response. Try again.');
-      const result = JSON.parse(jsonText.slice(s, e + 1));
+      const jsonStr = extractJSON(rawText);
+      if (!jsonStr) throw new Error('Could not find JSON in response. Please try again.');
+      const result = JSON.parse(jsonStr);
 
       if (result.error) {
         setStatus(result.error, 'error');
